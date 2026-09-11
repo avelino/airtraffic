@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Air Traffic",
+  "version": "2.0.0",
+  "description": "Automatic URL routing to destinations (Firefox containers or Chrome tab groups).",
+  "author": "Thiago Avelino <avelinorun@gmail.com>",
+  "homepage_url": "https://github.com/avelino/firefox-airtraffic",
+  "icons": {
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png"
+  },
+  "permissions": ["tabGroups", "tabs", "contextMenus", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": {
+      "48": "icons/icon-48.png",
+      "96": "icons/icon-96.png"
+    },
+    "default_title": "Air Traffic",
+    "default_popup": "popup/popup.html"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  }
+}

@@ -1,35 +1,29 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Air Traffic",
-  "version": "1.0.0",
-  "description": "Automatic URL routing for Firefox containers. On Zen Browser, pairs with workspaces for auto-switching.",
+  "version": "2.0.0",
+  "description": "Automatic URL routing to destinations (Firefox containers or Chrome tab groups). On Zen Browser, pairs with workspaces for auto-switching.",
   "author": "Thiago Avelino <avelinorun@gmail.com>",
   "homepage_url": "https://github.com/avelino/firefox-airtraffic",
   "icons": {
     "48": "icons/icon-48.png",
     "96": "icons/icon-96.png"
   },
-  "permissions": [
-    "contextualIdentities",
-    "cookies",
-    "tabs",
-    "storage",
-    "menus",
-    "<all_urls>"
-  ],
+  "permissions": ["contextualIdentities", "cookies", "tabs", "contextMenus", "storage"],
+  "host_permissions": ["<all_urls>"],
   "background": {
-    "scripts": ["src/background.ts"]
+    "scripts": ["background.js"]
   },
-  "browser_action": {
+  "action": {
     "default_icon": {
       "48": "icons/icon-48.png",
       "96": "icons/icon-96.png"
     },
     "default_title": "Air Traffic",
-    "default_popup": "src/popup/popup.html"
+    "default_popup": "popup/popup.html"
   },
   "options_ui": {
-    "page": "src/options/options.html",
+    "page": "options/options.html",
     "open_in_tab": true
   },
   "browser_specific_settings": {

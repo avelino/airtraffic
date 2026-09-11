@@ -9,7 +9,7 @@
   <div class="page">
     <header>
       <h1>Air Traffic</h1>
-      <p class="subtitle">URL routing for Firefox containers</p>
+      <p class="subtitle">Automatic URL routing by destination</p>
     </header>
 
     <div class="grid">
@@ -27,8 +27,8 @@
               <option value="wildcard">Wildcard (*)</option>
               <option value="regex">Regex (advanced)</option>
             </select>
-            <select id="container-select" required>
-              <option value="">Container...</option>
+            <select id="destination-select" required>
+              <option value="">Destination...</option>
             </select>
           </div>
           <input type="text" id="pattern-input" placeholder="github.com" required>
@@ -50,34 +50,28 @@
         <p id="rules-empty" class="empty-msg" hidden>No rules yet. Add one above.</p>
       </section>
 
-      <!-- Right: Containers + Settings -->
+      <!-- Right: Destinations + Settings -->
       <div class="sidebar">
         <section class="card">
-          <h2>Containers</h2>
-          <form id="container-form">
-            <input type="text" id="container-name-input" placeholder="Container name" required>
+          <h2>Destinations</h2>
+          <form id="destination-form">
+            <input type="text" id="destination-name-input" placeholder="Destination name" required>
             <div class="form-row">
-              <select id="container-color-select">
-                <option value="blue">Blue</option>
-                <option value="turquoise">Turquoise</option>
-                <option value="green">Green</option>
-                <option value="yellow">Yellow</option>
-                <option value="orange">Orange</option>
-                <option value="red">Red</option>
-                <option value="pink">Pink</option>
-                <option value="purple">Purple</option>
-                <option value="toolbar">Toolbar</option>
+              <select id="destination-color-select">
+                <!-- populated by JS from the active engine's color palette -->
               </select>
-              <select id="container-icon-select">
-                <!-- populated by JS with emojis -->
-              </select>
+              <span id="icon-select-wrap">
+                <select id="destination-icon-select">
+                  <!-- populated by JS with emojis (Firefox only) -->
+                </select>
+              </span>
             </div>
             <div class="form-actions">
-              <button type="submit" id="container-submit-btn">Create</button>
-              <button type="button" id="container-cancel-btn" class="btn-secondary" hidden>Cancel</button>
+              <button type="submit" id="destination-submit-btn">Create</button>
+              <button type="button" id="destination-cancel-btn" class="btn-secondary" hidden>Cancel</button>
             </div>
           </form>
-          <ul id="containers-list"></ul>
+          <ul id="destinations-list"></ul>
         </section>
 
         <section class="card">
@@ -89,9 +83,9 @@
               <option value="route_all">Route all except matched</option>
             </select>
           </label>
-          <div id="default-container-row" class="setting-row" hidden>
-            <span>Default container</span>
-            <select id="default-container-select">
+          <div id="default-destination-row" class="setting-row" hidden>
+            <span>Default destination</span>
+            <select id="default-destination-select">
               <option value="">Select...</option>
             </select>
           </div>

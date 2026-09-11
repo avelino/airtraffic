@@ -1,7 +1,7 @@
-import type { Rule, RulesUIOptions } from "../types";
-import { MATCH_TYPE_CONFIG } from "./constants";
-import { getContainerColor, getContainerName } from "./containers";
-import { saveRulesToStorage } from "./storage";
+import type { Rule, RulesUIOptions } from "../core/types";
+import { MATCH_TYPE_CONFIG } from "../core/constants";
+import { getDestinationColor, getDestinationName } from "./destinations";
+import { saveRulesToStorage } from "../core/storage";
 
 interface RulesState {
   editingRuleId: string | null;
@@ -11,12 +11,13 @@ interface RulesState {
   rulesList: HTMLUListElement | null;
   patternInput: HTMLInputElement | null;
   matchTypeSelect: HTMLSelectElement | null;
-  containerSelect: HTMLSelectElement | null;
+  destinationSelect: HTMLSelectElement | null;
   submitBtn: HTMLButtonElement | null;
   cancelBtn: HTMLButtonElement | null;
   matchHint: HTMLElement | null;
   form: HTMLFormElement | null;
   negateCheckbox: HTMLInputElement | null;
+  colorMap: Record<string, string>;
   onRulesChanged: (() => void) | null;
 }
 
@@ -28,12 +29,13 @@ const state: RulesState = {
   rulesList: null,
   patternInput: null,
   matchTypeSelect: null,
-  containerSelect: null,
+  destinationSelect: null,
   submitBtn: null,
   cancelBtn: null,
   matchHint: null,
   form: null,
   negateCheckbox: null,
+  colorMap: {},
   onRulesChanged: null,
 };
 
@@ -50,7 +52,7 @@ function cancelRuleEdit(): void {
   state.editingRuleId = null;
   if (state.patternInput) state.patternInput.value = "";
   if (state.matchTypeSelect) state.matchTypeSelect.value = "domain";
-  if (state.containerSelect) state.containerSelect.value = "";
+  if (state.destinationSelect) state.destinationSelect.value = "";
   if (state.submitBtn) state.submitBtn.textContent = "Add Rule";
   if (state.cancelBtn) state.cancelBtn.hidden = true;
   if (state.negateCheckbox) state.negateCheckbox.checked = false;
@@ -61,7 +63,7 @@ function startRuleEdit(rule: Rule): void {
   state.editingRuleId = rule.id;
   if (state.patternInput) state.patternInput.value = rule.pattern;
   if (state.matchTypeSelect) state.matchTypeSelect.value = rule.matchType;
-  if (state.containerSelect) state.containerSelect.value = rule.cookieStoreId;
+  if (state.destinationSelect) state.destinationSelect.value = rule.destinationId;
   if (state.negateCheckbox) state.negateCheckbox.checked = rule.negate || false;
   if (state.submitBtn) state.submitBtn.textContent = "Save";
   if (state.cancelBtn) state.cancelBtn.hidden = false;
@@ -82,12 +84,13 @@ export function initRulesUI(opts: RulesUIOptions): void {
   state.rulesList = opts.rulesList;
   state.patternInput = opts.patternInput;
   state.matchTypeSelect = opts.matchTypeSelect;
-  state.containerSelect = opts.containerSelect;
+  state.destinationSelect = opts.destinationSelect;
   state.submitBtn = opts.submitBtn;
   state.cancelBtn = opts.cancelBtn;
   state.matchHint = opts.matchHint;
   state.form = opts.form;
   state.negateCheckbox = opts.negateCheckbox || null;
+  state.colorMap = opts.colorMap;
   state.onRulesChanged = opts.onRulesChanged || null;
 
   state.matchTypeSelect.addEventListener("change", updateMatchHints);
@@ -98,8 +101,8 @@ export function initRulesUI(opts: RulesUIOptions): void {
     e.preventDefault();
     const pattern = state.patternInput!.value.trim();
     const matchType = state.matchTypeSelect!.value;
-    const cookieStoreId = state.containerSelect!.value;
-    if (!pattern || !cookieStoreId) return;
+    const destinationId = state.destinationSelect!.value;
+    if (!pattern || !destinationId) return;
 
     const negate = state.negateCheckbox?.checked || false;
 
@@ -108,7 +111,7 @@ export function initRulesUI(opts: RulesUIOptions): void {
       if (rule) {
         rule.pattern = pattern;
         rule.matchType = matchType as Rule["matchType"];
-        rule.cookieStoreId = cookieStoreId;
+        rule.destinationId = destinationId;
         rule.negate = negate || undefined;
       }
       cancelRuleEdit();
@@ -117,7 +120,7 @@ export function initRulesUI(opts: RulesUIOptions): void {
         id: crypto.randomUUID(),
         pattern,
         matchType: matchType as Rule["matchType"],
-        cookieStoreId,
+        destinationId,
         ...(negate ? { negate: true } : {}),
       });
       state.patternInput!.value = "";
@@ -152,7 +155,7 @@ export function renderRulesList(rules: Rule[]): void {
 
     const handle = document.createElement("span");
     handle.className = "drag-handle";
-    handle.textContent = "\u2630";
+    handle.textContent = "☰";
 
     const info = document.createElement("div");
     info.className = "rule-info";
@@ -171,21 +174,21 @@ export function renderRulesList(rules: Rule[]): void {
 
     const badge = document.createElement("span");
     badge.className = "container-badge";
-    badge.style.backgroundColor = getContainerColor(rule.cookieStoreId);
-    badge.textContent = getContainerName(rule.cookieStoreId);
+    badge.style.backgroundColor = getDestinationColor(rule.destinationId, state.colorMap);
+    badge.textContent = getDestinationName(rule.destinationId);
 
     const actions = document.createElement("div");
     actions.className = "rule-actions";
 
     const editBtn = document.createElement("button");
     editBtn.className = "edit-btn";
-    editBtn.textContent = "\u270E";
+    editBtn.textContent = "✎";
     editBtn.title = "Edit";
     editBtn.addEventListener("click", () => startRuleEdit(rule));
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
-    deleteBtn.textContent = "\u00d7";
+    deleteBtn.textContent = "×";
     deleteBtn.title = "Delete";
     deleteBtn.addEventListener("click", () => deleteRuleById(rule.id));
 
@@ -197,7 +200,6 @@ export function renderRulesList(rules: Rule[]): void {
     li.appendChild(badge);
     li.appendChild(actions);
 
-    // Drag & drop
     li.addEventListener("dragstart", (e) => {
       state.draggedItem = li;
       state.draggedIndex = index;

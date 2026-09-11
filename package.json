@@ -5,16 +5,20 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
-    "package": "node build.mjs && web-ext build --source-dir dist --overwrite-dest",
+    "build:firefox": "node build.mjs --target=firefox",
+    "build:chrome": "node build.mjs --target=chrome",
     "watch": "node build.mjs --watch",
+    "package:firefox": "npm run build:firefox && web-ext build --source-dir dist/firefox --overwrite-dest --artifacts-dir web-ext-artifacts/firefox",
+    "package:chrome": "npm run build:chrome && mkdir -p web-ext-artifacts/chrome && cd dist/chrome && zip -r -X ../../web-ext-artifacts/chrome/air-traffic-chrome.zip . && cd ../..",
     "test": "node --import tsx --test tests/**/*.test.ts",
-    "lint": "npx web-ext lint --source-dir dist",
+    "lint": "npx web-ext lint --source-dir dist/firefox",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "web-ext": "^10.2.0"
+    "web-ext": "^10.2.0",
+    "webextension-polyfill": "^0.12.0"
   }
 }

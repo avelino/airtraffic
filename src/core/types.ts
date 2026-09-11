@@ -4,15 +4,24 @@ export interface Rule {
   id: string;
   pattern: string;
   matchType: MatchType;
-  cookieStoreId: string;
+  destinationId: string;
   negate?: boolean;
 }
 
 export interface Settings {
   mode: "route_matched" | "route_all";
-  defaultContainer: string;
+  defaultDestinationId: string;
   useSync: boolean;
 }
+
+export interface Destination {
+  id: string;
+  name: string;
+  color: string;
+  icon?: string;
+}
+
+export type NewDestination = Omit<Destination, "id">;
 
 export interface MatchTypeConfig {
   placeholder: string;
@@ -24,11 +33,12 @@ export interface RulesUIOptions {
   rulesList: HTMLUListElement;
   patternInput: HTMLInputElement;
   matchTypeSelect: HTMLSelectElement;
-  containerSelect: HTMLSelectElement;
+  destinationSelect: HTMLSelectElement;
   submitBtn: HTMLButtonElement;
   cancelBtn: HTMLButtonElement;
   matchHint: HTMLElement;
   form: HTMLFormElement;
   negateCheckbox?: HTMLInputElement;
+  colorMap: Record<string, string>;
   onRulesChanged?: () => void;
 }
