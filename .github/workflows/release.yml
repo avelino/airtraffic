@@ -25,14 +25,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build extension
-        run: npm run build && npx web-ext build --source-dir dist
+      - name: Package extensions
+        run: |
+          npm run package:firefox
+          npm run package:chrome
+
+      - name: Collect artifacts under stable names
+        run: |
+          mkdir -p release
+          cp web-ext-artifacts/firefox/*.zip release/air-traffic-firefox.zip
+          cp web-ext-artifacts/chrome/*.zip release/air-traffic-chrome.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: air-traffic
-          path: web-ext-artifacts/*.zip
+          path: release/*.zip
 
   release-latest:
     needs: build
