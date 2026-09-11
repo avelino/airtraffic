@@ -18,7 +18,7 @@
     "esbuild": "^0.25.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "web-ext": "^10.2.0",
+    "web-ext": "^10.6.0",
     "webextension-polyfill": "^0.12.0"
   }
 }
