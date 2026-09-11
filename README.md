@@ -2,7 +2,7 @@
 
 Automatic URL routing for [Firefox](https://www.mozilla.org/firefox/) containers and [Chrome](https://www.google.com/chrome/) tab groups. Define URL patterns, assign them to a destination, and tabs land in the right place automatically.
 
-A **destination** is a Firefox container on Firefox and a tab group on Chrome. Same rules, same UI — the mechanism underneath differs per browser.
+A **destination** is a Firefox container on Firefox and a tab group on Chrome. Same rules, same UI, but not the same guarantee: containers separate cookies and logins, tab groups do not. Read [Chrome: no session isolation](#chrome-no-session-isolation-and-why) before installing on Chrome.
 
 Works with any Firefox-based browser and any Chromium-based browser. On [Zen Browser](https://zen-browser.app/), it pairs perfectly with workspaces — pair a container with a workspace and get automatic workspace switching for free.
 
@@ -33,11 +33,23 @@ URL matched -> Reopen in correct container
 
 1. You create rules mapping URL patterns to destinations (each destination becomes a tab group)
 2. When you navigate to a matching URL, Air Traffic **moves the live tab** into the matching tab group, creating it if needed
-3. There is **no cookie or session isolation** — Chrome tab groups are visual grouping only
+3. There is **no cookie or session isolation**. Chrome tab groups are visual grouping only
 
 ```
 URL matched -> Tab moved into correct tab group
 ```
+
+### Chrome: no session isolation (and why)
+
+On Firefox a destination is a **container**, a real storage partition with its own cookies, logins and `localStorage`. Two containers can be signed into the same site as different users at the same time.
+
+On Chrome a destination is a **tab group**, which is paint. Every group shares one cookie jar. Sign into GitHub in the Work group and the Personal group is signed into the same account. Air Traffic on Chrome decides where a tab lands. It does not decide who you are.
+
+**Why not Chrome profiles?** Profiles do give real isolation, so this is the fair question. The answer is that no extension can reach them. Chrome ships no profile API: an extension is installed *into* one profile and cannot list, create, switch, or open a tab in another one. The only proposal for it, [Chromium's Profile Extension API](https://www.chromium.org/developers/design-documents/extensions/proposed-changes/apis-under-development/profile-extension-api/), dates from 2012, says in its own text that "This API is read-only. It cannot change or create new profiles", and never shipped. Switching profile is a browser UI action (`chrome://profile-picker`) or a launch flag (`--profile-directory`), and an extension can do neither.
+
+There is also no per-tab cookie store to fall back on. `chrome.tabs.create` has no equivalent of Firefox's `cookieStoreId`, so even handling cookies yourself would not let you open a tab into a chosen partition. Incognito is the only other partition Chrome exposes and it is one shared bucket, not one per destination, so it cannot express work vs personal vs client.
+
+**If you need real isolation on Chrome**, create Chrome profiles by hand and run Air Traffic inside each one. Rules and destinations live in extension storage, which is per profile, so every profile keeps its own set and organizes its own tabs.
 
 ### Chrome: what's different
 
@@ -75,14 +87,23 @@ All matching is case-insensitive. Domain matching is strict (won't match `fakegi
 
 ## Installation
 
-### From file
+### Firefox, from file
 
 1. [Download the latest release](https://github.com/avelino/firefox-airtraffic/releases)
 2. Go to `about:addons`
 3. Click the gear icon > **Install Add-on From File...**
-4. Select the `.zip` file
+4. Select the Firefox `.zip` file
 
 > If you get a signature error, set `xpinstall.signatures.required` to `false` in `about:config`.
+
+### Chrome, from file
+
+1. [Download the latest release](https://github.com/avelino/firefox-airtraffic/releases) and unzip the Chrome build
+2. Go to `chrome://extensions`
+3. Turn on **Developer mode**
+4. Click **Load unpacked** and select the unzipped folder
+
+> Chrome drops unpacked extensions on restart unless they come from the Web Store. Reload it the same way after a restart.
 
 ### Build from source
 
@@ -102,10 +123,10 @@ Click the Air Traffic icon in the toolbar:
 
 1. Select the match type (Domain is recommended for most cases)
 2. Enter the pattern
-3. Pick the target container
+3. Pick the target destination (a container on Firefox, a tab group on Chrome)
 4. Click **Add Rule**
 
-Rules can be edited or deleted at any time. That's it for Firefox.
+Rules can be edited or deleted at any time. On Chrome, create the destination first in Options, since a tab group only exists once a tab is in it.
 
 ### Zen Browser: enable workspace switching (optional)
 
@@ -180,7 +201,7 @@ npx web-ext run --source-dir dist/firefox --firefox=/Applications/Zen.app/Conten
 | Firefox | Container (`contextualIdentities`) | Yes | N/A |
 | Zen Browser | Container | Yes | Yes (via container-workspace pairing) |
 | Other Firefox forks | Container (if `contextualIdentities` is supported) | Yes | Depends on fork |
-| Chrome / Chromium | Tab Group (`tabGroups`) | No — visual grouping only | N/A |
+| Chrome / Chromium | Tab Group (`tabGroups`) | No, [visual grouping only](#chrome-no-session-isolation-and-why) | N/A |
 
 ## Technical details
 
