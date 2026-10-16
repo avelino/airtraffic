@@ -16,9 +16,9 @@
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
-    "tsx": "^4.23.13",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "web-ext": "^10.6.0",
+    "web-ext": "^10.7.0",
     "webextension-polyfill": "^0.12.0"
   }
 }
