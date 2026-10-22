@@ -2,20 +2,27 @@
   "manifest_version": 3,
   "name": "Air Traffic",
   "version": "2.0.0",
-  "description": "Automatic URL routing to destinations (Firefox containers or Chrome tab groups).",
+  "description": "Routes tabs into Chrome tab groups automatically, based on URL rules you define.",
   "author": "Thiago Avelino <avelinorun@gmail.com>",
-  "homepage_url": "https://github.com/avelino/firefox-airtraffic",
+  "homepage_url": "https://github.com/avelino/airtraffic",
   "icons": {
+    "16": "icons/icon-16.png",
     "48": "icons/icon-48.png",
-    "96": "icons/icon-96.png"
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
   },
-  "permissions": ["tabGroups", "tabs", "contextMenus", "storage"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "tabGroups",
+    "tabs",
+    "contextMenus",
+    "storage"
+  ],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_icon": {
+      "16": "icons/icon-16.png",
       "48": "icons/icon-48.png",
       "96": "icons/icon-96.png"
     },
@@ -25,5 +32,6 @@
   "options_ui": {
     "page": "options/options.html",
     "open_in_tab": true
-  }
+  },
+  "minimum_chrome_version": "115"
 }

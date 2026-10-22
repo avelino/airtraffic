@@ -222,7 +222,11 @@ npx web-ext run --source-dir dist/firefox --firefox=/Applications/Zen.app/Conten
 | `tabs` | Yes | Yes | Intercept navigation, create/remove/group tabs |
 | `contextMenus` | Yes | Yes | "Open in destination" link menu |
 | `storage` | Yes | Yes | Persist routing rules and destinations |
-| `<all_urls>` (host permission) | Yes | Yes | Match URLs across all sites |
+| `<all_urls>` (host permission) | Yes | — | Match URLs across all sites. Chrome does not need it: the `tabs` permission already exposes tab URLs |
+
+## Privacy
+
+Air Traffic makes no network requests and collects no data. Rules stay in browser storage. See [PRIVACY.md](PRIVACY.md).
 
 ## License
 
