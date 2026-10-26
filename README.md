@@ -231,3 +231,5 @@ Air Traffic makes no network requests and collects no data. Rules stay in browse
 ## License
 
 MIT
+
+Nota de teste temporaria, sera descartada.
