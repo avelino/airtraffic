@@ -169,7 +169,11 @@ firefox-airtraffic/
 ```bash
 # Run tests
 npm test
+```
 
+Run the test suite before opening a pull request.
+
+```bash
 # Typecheck
 npm run typecheck
 
