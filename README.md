@@ -89,7 +89,7 @@ All matching is case-insensitive. Domain matching is strict (won't match `fakegi
 
 ### Firefox, from file
 
-1. [Download the latest release](https://github.com/avelino/firefox-airtraffic/releases)
+1. [Download the latest release](https://github.com/avelino/airtraffic/releases)
 2. Go to `about:addons`
 3. Click the gear icon > **Install Add-on From File...**
 4. Select the Firefox `.zip` file
@@ -98,7 +98,7 @@ All matching is case-insensitive. Domain matching is strict (won't match `fakegi
 
 ### Chrome, from file
 
-1. [Download the latest release](https://github.com/avelino/firefox-airtraffic/releases) and unzip the Chrome build
+1. [Download the latest release](https://github.com/avelino/airtraffic/releases) and unzip the Chrome build
 2. Go to `chrome://extensions`
 3. Turn on **Developer mode**
 4. Click **Load unpacked** and select the unzipped folder
@@ -108,8 +108,8 @@ All matching is case-insensitive. Domain matching is strict (won't match `fakegi
 ### Build from source
 
 ```bash
-git clone https://github.com/avelino/firefox-airtraffic.git
-cd firefox-airtraffic
+git clone https://github.com/avelino/airtraffic.git
+cd airtraffic
 npm install
 npm run package:firefox   # -> web-ext-artifacts/firefox/*.zip
 npm run package:chrome    # -> web-ext-artifacts/chrome/air-traffic-chrome.zip
@@ -145,7 +145,7 @@ Without this, tabs will open in the correct container but Zen won't auto-switch 
 ## Project structure
 
 ```
-firefox-airtraffic/
+airtraffic/
 ├── manifests/
 │   ├── firefox.json           # MV3 manifest (contextualIdentities)
 │   └── chrome.json            # MV3 manifest (tabGroups)
