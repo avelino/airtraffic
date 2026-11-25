@@ -19,12 +19,14 @@ export function resolveRoute(
 ): RouteResult {
   if (isIgnoredUrl(url)) return { action: "none" };
 
+  const rule = findMatchingRule(url, rules);
+  if (rule?.action === "ignore") return { action: "none" };
+
   if (settings.mode === "route_all") {
     if (!settings.defaultDestinationId) return { action: "none" };
-    const rule = findMatchingRule(url, rules);
     if (rule) {
       if (rule.negate) {
-        if (currentDestinationId === rule.destinationId) return { action: "none" };
+        if (!rule.destinationId || currentDestinationId === rule.destinationId) return { action: "none" };
         return { action: "route", destinationId: rule.destinationId };
       }
       return { action: "none" };
@@ -33,8 +35,6 @@ export function resolveRoute(
     return { action: "route", destinationId: settings.defaultDestinationId };
   }
 
-  const rule = findMatchingRule(url, rules);
-  if (!rule) return { action: "none" };
-  if (currentDestinationId === rule.destinationId) return { action: "none" };
+  if (!rule?.destinationId || currentDestinationId === rule.destinationId) return { action: "none" };
   return { action: "route", destinationId: rule.destinationId };
 }

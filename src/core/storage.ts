@@ -15,6 +15,14 @@ export function migrateRuleSchema(raw: Record<string, unknown>): Rule {
   return raw as unknown as Rule;
 }
 
+export function validateImportedRule(raw: Record<string, unknown>): Rule | null {
+  const rule = migrateRuleSchema(raw);
+  if (rule.action !== undefined && rule.action !== "route" && rule.action !== "ignore") return null;
+  if (!rule.pattern || !rule.matchType) return null;
+  if (rule.action !== "ignore" && !rule.destinationId) return null;
+  return rule;
+}
+
 export function migrateSettingsSchema(raw: Record<string, unknown>): Settings {
   if (raw.defaultDestinationId === undefined && typeof raw.defaultContainer === "string") {
     raw.defaultDestinationId = raw.defaultContainer;

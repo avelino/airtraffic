@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { migrateRuleSchema, migrateSettingsSchema } from "../src/core/storage";
+import { migrateRuleSchema, migrateSettingsSchema, validateImportedRule } from "../src/core/storage";
 
 describe("migrateRuleSchema", () => {
   it("renames cookieStoreId to destinationId", () => {
@@ -14,9 +14,29 @@ describe("migrateRuleSchema", () => {
     assert.equal(migrated.destinationId, "dest-1");
   });
 
-  it("preserves other fields (negate, pattern, matchType)", () => {
-    const migrated = migrateRuleSchema({ id: "1", pattern: "work.com", matchType: "domain", cookieStoreId: "c1", negate: true });
-    assert.deepEqual(migrated, { id: "1", pattern: "work.com", matchType: "domain", negate: true, destinationId: "c1" });
+  it("preserves other fields (negate, action, pattern, matchType)", () => {
+    const migrated = migrateRuleSchema({ id: "1", pattern: "work.com", matchType: "domain", cookieStoreId: "c1", negate: true, action: "ignore" });
+    assert.deepEqual(migrated, { id: "1", pattern: "work.com", matchType: "domain", negate: true, action: "ignore", destinationId: "c1" });
+  });
+});
+
+describe("validateImportedRule", () => {
+  it("accepts Ignore without a destination", () => {
+    assert.deepEqual(validateImportedRule({ id: "ignore", pattern: "github.com", matchType: "domain", action: "ignore" }), {
+      id: "ignore", pattern: "github.com", matchType: "domain", action: "ignore",
+    });
+  });
+
+  it("preserves legacy route rules without an action", () => {
+    assert.ok(validateImportedRule({ id: "legacy", pattern: "github.com", matchType: "domain", destinationId: "dev" }));
+  });
+
+  it("rejects route rules without a destination", () => {
+    assert.equal(validateImportedRule({ id: "route", pattern: "github.com", matchType: "domain", action: "route" }), null);
+  });
+
+  it("rejects unknown explicit actions instead of defaulting them", () => {
+    assert.equal(validateImportedRule({ id: "bad", pattern: "github.com", matchType: "domain", destinationId: "dev", action: "skip" }), null);
   });
 });
 

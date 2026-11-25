@@ -1,5 +1,5 @@
 import type { Engine } from "../core/engine";
-import type { Destination } from "../core/types";
+import type { Destination, Rule } from "../core/types";
 import {
   loadDestinationList,
   getDestinations,
@@ -13,7 +13,7 @@ import {
   loadRulesFromStorage,
   saveRulesToStorage,
   migrateStorageArea,
-  migrateRuleSchema,
+  validateImportedRule,
   migrateSettingsSchema,
   getSettings,
 } from "../core/storage";
@@ -32,6 +32,8 @@ function initRulesPanel(engine: Engine): void {
     patternInput: el<HTMLInputElement>("pattern-input"),
     matchTypeSelect: el<HTMLSelectElement>("match-type-select"),
     destinationSelect: el<HTMLSelectElement>("destination-select"),
+    actionSelect: el<HTMLSelectElement>("rule-action-select"),
+    destinationField: el("destination-field"),
     submitBtn: el<HTMLButtonElement>("submit-btn"),
     cancelBtn: el<HTMLButtonElement>("cancel-btn"),
     matchHint: el("match-hint"),
@@ -50,7 +52,7 @@ function initRulesPanel(engine: Engine): void {
       ? all.filter(
           (r) =>
             r.pattern.toLowerCase().includes(query) ||
-            getDestinationName(r.destinationId).toLowerCase().includes(query),
+            (r.action === "ignore" ? "ignore keep current destination" : getDestinationName(r.destinationId || "")).toLowerCase().includes(query),
         )
       : all;
     renderRulesList(filtered);
@@ -294,13 +296,13 @@ function initDataPanel(applySettings: () => Promise<void>): void {
         return;
       }
 
-      data.rules = data.rules.map(migrateRuleSchema);
-
+      const importedRules: (Rule | null)[] = (data.rules as Record<string, unknown>[]).map(validateImportedRule);
+      if (importedRules.some((rule) => rule === null)) {
+        alert("Invalid file: rules are missing required fields or have an unknown action.");
+        return;
+      }
+      data.rules = importedRules as Rule[];
       for (const rule of data.rules) {
-        if (!rule.pattern || !rule.matchType || !rule.destinationId) {
-          alert("Invalid file: rules are missing required fields.");
-          return;
-        }
         if (!rule.id) rule.id = crypto.randomUUID();
       }
 

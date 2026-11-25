@@ -78,6 +78,14 @@ describe("migrateStorageArea", () => {
 });
 
 describe("storage area selection", () => {
+  it("round-trips Ignore rules without a destination", async () => {
+    installFakeBrowser();
+    await loadSettingsFromStorage();
+    const ignore = { id: "ignore", pattern: "github.com", matchType: "domain" as const, action: "ignore" as const };
+    await saveRulesToStorage([ignore]);
+    assert.deepEqual(await loadRulesFromStorage(), [ignore]);
+  });
+
   it("rules and destinations follow useSync", async () => {
     const fake = installFakeBrowser();
     await loadSettingsFromStorage();

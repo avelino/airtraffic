@@ -16,15 +16,21 @@
       <option value="wildcard">Wildcard (*)</option>
       <option value="regex">Regex (advanced)</option>
     </select>
+    <select id="rule-action-select">
+      <option value="route">Route</option>
+      <option value="ignore">Ignore</option>
+    </select>
     <input type="text" id="pattern-input" placeholder="github.com" required>
     <label class="negate-toggle">
       <input type="checkbox" id="negate-checkbox">
       <span>Exclude (match everything EXCEPT)</span>
     </label>
     <span id="match-hint" class="hint">Matches github.com and all subdomains</span>
-    <select id="destination-select" required>
-      <option value="">Select destination...</option>
-    </select>
+    <div id="destination-field">
+      <select id="destination-select" required>
+        <option value="">Select destination...</option>
+      </select>
+    </div>
     <div class="form-actions">
       <button type="submit" id="submit-btn">Add Rule</button>
       <button type="button" id="cancel-btn" class="btn-secondary" hidden>Cancel</button>

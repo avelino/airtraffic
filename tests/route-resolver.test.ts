@@ -97,6 +97,44 @@ describe("resolveRoute", () => {
     });
   });
 
+  describe("ignore rules", () => {
+    const settingsMatched: Settings = { mode: "route_matched", defaultDestinationId: "", useSync: false };
+    const settingsAll: Settings = { mode: "route_all", defaultDestinationId: "dest-default", useSync: false };
+
+    it("stops at the first matching Ignore and keeps the current destination", () => {
+      const ignoreThenRoute: Rule[] = [
+        { id: "ignore", pattern: "github.com", matchType: "domain", action: "ignore" },
+        { id: "route", pattern: "github.com", matchType: "domain", destinationId: "dest-dev" },
+      ];
+      assert.deepEqual(resolveRoute("https://github.com", ignoreThenRoute, settingsMatched, "dest-current"), { action: "none" });
+      assert.deepEqual(resolveRoute("https://github.com", [...ignoreThenRoute].reverse(), settingsMatched, "dest-current"), { action: "route", destinationId: "dest-dev" });
+    });
+
+    it("does not stop later rules when an Ignore does not match", () => {
+      const ignoreThenRoute: Rule[] = [
+        { id: "ignore", pattern: "slack.com", matchType: "domain", action: "ignore" },
+        { id: "route", pattern: "github.com", matchType: "domain", destinationId: "dest-dev" },
+      ];
+      assert.deepEqual(resolveRoute("https://github.com", ignoreThenRoute, settingsMatched, "dest-current"), { action: "route", destinationId: "dest-dev" });
+    });
+
+    it("blocks the route_all default destination when Ignore matches", () => {
+      const ignore: Rule[] = [
+        { id: "ignore", pattern: "github.com", matchType: "domain", action: "ignore" },
+        { id: "route", pattern: "github.com", matchType: "domain", destinationId: "dest-dev" },
+      ];
+      assert.deepEqual(resolveRoute("https://github.com", ignore, settingsAll, "dest-current"), { action: "none" });
+    });
+
+    it("applies Exclude negation independently to an Ignore action", () => {
+      const negatedIgnore: Rule[] = [{
+        id: "ignore", pattern: "work.com", matchType: "domain", action: "ignore", negate: true,
+      }];
+      assert.deepEqual(resolveRoute("https://github.com", negatedIgnore, settingsAll, "dest-current"), { action: "none" });
+      assert.deepEqual(resolveRoute("https://work.com", negatedIgnore, settingsAll, "dest-current"), { action: "route", destinationId: "dest-default" });
+    });
+  });
+
   describe("negated rules integration", () => {
     const negatedRules: Rule[] = [
       { id: "1", pattern: "work.company.com", matchType: "domain", destinationId: "dest-personal", negate: true },

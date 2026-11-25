@@ -12,6 +12,8 @@ interface RulesState {
   patternInput: HTMLInputElement | null;
   matchTypeSelect: HTMLSelectElement | null;
   destinationSelect: HTMLSelectElement | null;
+  actionSelect: HTMLSelectElement | null;
+  destinationField: HTMLElement | null;
   submitBtn: HTMLButtonElement | null;
   cancelBtn: HTMLButtonElement | null;
   matchHint: HTMLElement | null;
@@ -30,6 +32,8 @@ const state: RulesState = {
   patternInput: null,
   matchTypeSelect: null,
   destinationSelect: null,
+  actionSelect: null,
+  destinationField: null,
   submitBtn: null,
   cancelBtn: null,
   matchHint: null,
@@ -48,11 +52,19 @@ function updateMatchHints(): void {
   state.matchHint.textContent = negated ? `Matches everything EXCEPT: ${config.hint}` : config.hint;
 }
 
+function updateActionVisibility(): void {
+  const isIgnore = state.actionSelect?.value === "ignore";
+  if (state.destinationField) state.destinationField.hidden = Boolean(isIgnore);
+  if (state.destinationSelect) state.destinationSelect.required = !isIgnore;
+}
+
 function cancelRuleEdit(): void {
   state.editingRuleId = null;
   if (state.patternInput) state.patternInput.value = "";
   if (state.matchTypeSelect) state.matchTypeSelect.value = "domain";
+  if (state.actionSelect) state.actionSelect.value = "route";
   if (state.destinationSelect) state.destinationSelect.value = "";
+  updateActionVisibility();
   if (state.submitBtn) state.submitBtn.textContent = "Add Rule";
   if (state.cancelBtn) state.cancelBtn.hidden = true;
   if (state.negateCheckbox) state.negateCheckbox.checked = false;
@@ -63,7 +75,9 @@ function startRuleEdit(rule: Rule): void {
   state.editingRuleId = rule.id;
   if (state.patternInput) state.patternInput.value = rule.pattern;
   if (state.matchTypeSelect) state.matchTypeSelect.value = rule.matchType;
-  if (state.destinationSelect) state.destinationSelect.value = rule.destinationId;
+  if (state.actionSelect) state.actionSelect.value = rule.action || "route";
+  if (state.destinationSelect) state.destinationSelect.value = rule.destinationId || "";
+  updateActionVisibility();
   if (state.negateCheckbox) state.negateCheckbox.checked = rule.negate || false;
   if (state.submitBtn) state.submitBtn.textContent = "Save";
   if (state.cancelBtn) state.cancelBtn.hidden = false;
@@ -85,6 +99,8 @@ export function initRulesUI(opts: RulesUIOptions): void {
   state.patternInput = opts.patternInput;
   state.matchTypeSelect = opts.matchTypeSelect;
   state.destinationSelect = opts.destinationSelect;
+  state.actionSelect = opts.actionSelect;
+  state.destinationField = opts.destinationField;
   state.submitBtn = opts.submitBtn;
   state.cancelBtn = opts.cancelBtn;
   state.matchHint = opts.matchHint;
@@ -94,6 +110,7 @@ export function initRulesUI(opts: RulesUIOptions): void {
   state.onRulesChanged = opts.onRulesChanged || null;
 
   state.matchTypeSelect.addEventListener("change", updateMatchHints);
+  state.actionSelect.addEventListener("change", updateActionVisibility);
   if (state.negateCheckbox) state.negateCheckbox.addEventListener("change", updateMatchHints);
   state.cancelBtn.addEventListener("click", cancelRuleEdit);
 
@@ -101,8 +118,9 @@ export function initRulesUI(opts: RulesUIOptions): void {
     e.preventDefault();
     const pattern = state.patternInput!.value.trim();
     const matchType = state.matchTypeSelect!.value;
+    const action = state.actionSelect!.value as Rule["action"];
     const destinationId = state.destinationSelect!.value;
-    if (!pattern || !destinationId) return;
+    if (!pattern || (action !== "ignore" && !destinationId)) return;
 
     const negate = state.negateCheckbox?.checked || false;
 
@@ -111,7 +129,9 @@ export function initRulesUI(opts: RulesUIOptions): void {
       if (rule) {
         rule.pattern = pattern;
         rule.matchType = matchType as Rule["matchType"];
-        rule.destinationId = destinationId;
+        rule.action = action;
+        if (action === "ignore") delete rule.destinationId;
+        else rule.destinationId = destinationId;
         rule.negate = negate || undefined;
       }
       cancelRuleEdit();
@@ -120,7 +140,8 @@ export function initRulesUI(opts: RulesUIOptions): void {
         id: crypto.randomUUID(),
         pattern,
         matchType: matchType as Rule["matchType"],
-        destinationId,
+        action,
+        ...(action === "ignore" ? {} : { destinationId }),
         ...(negate ? { negate: true } : {}),
       });
       state.patternInput!.value = "";
@@ -132,6 +153,7 @@ export function initRulesUI(opts: RulesUIOptions): void {
   });
 
   updateMatchHints();
+  updateActionVisibility();
 }
 
 export function setRules(rules: Rule[]): void {
@@ -167,15 +189,20 @@ export function renderRulesList(rules: Rule[]): void {
     const meta = document.createElement("span");
     meta.className = "rule-meta";
     const label = MATCH_TYPE_CONFIG[rule.matchType]?.label || rule.matchType;
-    meta.textContent = rule.negate ? `NOT ${label}` : label;
+    const matchLabel = rule.negate ? `NOT ${label}` : label;
+    meta.textContent = rule.action === "ignore"
+      ? `${matchLabel} · Ignore — keep current destination`
+      : matchLabel;
 
     info.appendChild(pattern);
     info.appendChild(meta);
 
-    const badge = document.createElement("span");
-    badge.className = "container-badge";
-    badge.style.backgroundColor = getDestinationColor(rule.destinationId, state.colorMap);
-    badge.textContent = getDestinationName(rule.destinationId);
+    const badge = rule.action === "ignore" ? null : document.createElement("span");
+    if (badge) {
+      badge.className = "container-badge";
+      badge.style.backgroundColor = getDestinationColor(rule.destinationId || "", state.colorMap);
+      badge.textContent = getDestinationName(rule.destinationId || "");
+    }
 
     const actions = document.createElement("div");
     actions.className = "rule-actions";
@@ -197,7 +224,7 @@ export function renderRulesList(rules: Rule[]): void {
 
     li.appendChild(handle);
     li.appendChild(info);
-    li.appendChild(badge);
+    if (badge) li.appendChild(badge);
     li.appendChild(actions);
 
     li.addEventListener("dragstart", (e) => {
