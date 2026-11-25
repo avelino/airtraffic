@@ -1,10 +1,13 @@
 export type MatchType = "domain" | "domainContains" | "contains" | "startsWith" | "wildcard" | "regex";
 
+export type RuleAction = "route" | "ignore";
+
 export interface Rule {
   id: string;
   pattern: string;
   matchType: MatchType;
-  destinationId: string;
+  destinationId?: string;
+  action?: RuleAction;
   negate?: boolean;
 }
 
@@ -34,6 +37,8 @@ export interface RulesUIOptions {
   patternInput: HTMLInputElement;
   matchTypeSelect: HTMLSelectElement;
   destinationSelect: HTMLSelectElement;
+  actionSelect: HTMLSelectElement;
+  destinationField: HTMLElement;
   submitBtn: HTMLButtonElement;
   cancelBtn: HTMLButtonElement;
   matchHint: HTMLElement;

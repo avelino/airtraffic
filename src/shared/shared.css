@@ -6,6 +6,14 @@ ul {
   margin: 0;
 }
 
+#destination-field {
+  width: 100%;
+}
+
+#destination-field select {
+  width: 100%;
+}
+
 /* Rule items */
 .rule-item {
   display: flex;

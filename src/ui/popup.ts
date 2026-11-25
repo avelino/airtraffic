@@ -11,6 +11,8 @@ export async function runPopup(engine: Engine): Promise<void> {
     patternInput: document.getElementById("pattern-input") as HTMLInputElement,
     matchTypeSelect: document.getElementById("match-type-select") as HTMLSelectElement,
     destinationSelect,
+    actionSelect: document.getElementById("rule-action-select") as HTMLSelectElement,
+    destinationField: document.getElementById("destination-field") as HTMLElement,
     submitBtn: document.getElementById("submit-btn") as HTMLButtonElement,
     cancelBtn: document.getElementById("cancel-btn") as HTMLButtonElement,
     matchHint: document.getElementById("match-hint") as HTMLElement,

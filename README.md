@@ -85,6 +85,12 @@ This makes Air Traffic a full workspace router on Zen, without needing any Zen-s
 
 All matching is case-insensitive. Domain matching is strict (won't match `fakegithub.com`).
 
+### Rule actions and order
+
+Rules are evaluated in order, and the first matching rule wins. A **Route** rule sends the tab to its destination. An **Ignore** rule stops routing and keeps the tab in its current destination; later rules and the default destination are not applied. In **Route all except matched** mode, ordinary matching rules continue to exclude URLs from the default destination.
+
+**Exclude (match everything EXCEPT)** reverses whether a rule's pattern matches. It is independent of the action, so an excluded Ignore rule ignores URLs that do not match its pattern.
+
 ## Installation
 
 ### Firefox, from file
@@ -123,7 +129,7 @@ Click the Air Traffic icon in the toolbar:
 
 1. Select the match type (Domain is recommended for most cases)
 2. Enter the pattern
-3. Pick the target destination (a container on Firefox, a tab group on Chrome)
+3. Choose **Route** or **Ignore**; Route rules also need a target destination (a container on Firefox, a tab group on Chrome)
 4. Click **Add Rule**
 
 Rules can be edited or deleted at any time. On Chrome, create the destination first in Options, since a tab group only exists once a tab is in it.
